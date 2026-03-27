@@ -1,0 +1,172 @@
+.page {
+  min-height: 100vh;
+  background: var(--bg);
+  position: relative;
+}
+
+.noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+.back {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0;
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s;
+}
+
+.back:hover {
+  color: var(--text);
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(64px, 16vw, 96px);
+  line-height: 0.88;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.bio {
+  margin-bottom: 40px;
+}
+
+.bio p {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* Link Cards */
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 48px;
+}
+
+.linkCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.linkCard:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.linkIcon {
+  font-size: 20px;
+  color: var(--accent);
+  width: 40px;
+  height: 40px;
+  background: var(--accent-dim);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.linkText {
+  flex: 1;
+}
+
+.linkTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.linkSub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.linkArrow {
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+/* Formula block */
+.formula {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 48px;
+}
+
+.formulaLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.formulaLine {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: var(--accent);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.formulaLine:last-child {
+  margin-bottom: 0;
+  color: var(--green);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+}
+
+.footer p {
+  font-size: 12px;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
