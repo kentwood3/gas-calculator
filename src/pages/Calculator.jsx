@@ -57,20 +57,24 @@ export default function Calculator() {
 
     const gallonsNeeded = th - tc
 
-    // P1 = cost at closer station (accounting for fuel burned getting there)
-    const fuelUsedD1 = (r * d1) / mpg
-    const P1 = (gallonsNeeded - fuelUsedD1) * g1
+let P1, P2
 
-    // P2 = cost at further station (accounting for fuel burned getting there)
-    const fuelUsedD2 = (r * d2) / mpg
-    const P2 = (gallonsNeeded - fuelUsedD2) * g2
+if (r === 1) {
+  // One way — subtract fuel burned getting there
+  P1 = (gallonsNeeded - (d1 / mpg)) * g1
+  P2 = (gallonsNeeded - (d2 / mpg)) * g2
+} else {
+  // Dedicated round trip — buy back fuel burned getting there, subtract cost of drive home
+  P1 = (gallonsNeeded - (d1 / mpg)) * g1 - (d1 / mpg) * g1
+  P2 = (gallonsNeeded - (d2 / mpg)) * g2 - (d2 / mpg) * g2
+}
 
-    if (gallonsNeeded - fuelUsedD1 <= 0) {
+    if (gallonsNeeded - (d1 / mpg) <= 0) {
       setError("You'd burn more fuel getting to the closer station than you'd buy. Check your inputs.")
       return
     }
 
-    if (gallonsNeeded - fuelUsedD2 <= 0) {
+    if (gallonsNeeded - (d2 / mpg) <= 0) {
       setError("You'd burn more fuel getting to the further station than you'd buy. Check your inputs.")
       return
     }
