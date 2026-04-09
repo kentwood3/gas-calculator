@@ -65,8 +65,8 @@ if (r === 1) {
   P2 = (gallonsNeeded - (d2 / mpg)) * g2
 } else {
   // Dedicated round trip — buy back fuel burned getting there, subtract cost of drive home
-  P1 = (gallonsNeeded - (d1 / mpg)) * g1 - (d1 / mpg) * g1
-  P2 = (gallonsNeeded - (d2 / mpg)) * g2 - (d2 / mpg) * g2
+  P1 = (gallonsNeeded - (d1 / mpg)) * g1 + (d1 / mpg) * g1
+  P2 = (gallonsNeeded - (d2 / mpg)) * g2 + (d2 / mpg) * g2
 }
 
     if (gallonsNeeded - (d1 / mpg) <= 0) {
