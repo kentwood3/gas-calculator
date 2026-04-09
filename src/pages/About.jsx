@@ -21,7 +21,7 @@ export default function About() {
         <div className={styles.bio}>
           <p>
             {/* ✏️ Replace this with your own bio */}
-            Hey, I'm [Your Name]. I make content about math, money, and the stuff
+            Hey, I'm kent. I make videos about math, money, and the stuff
             nobody bothers to calculate. This calculator came out of a YouTube video
             where I did the actual math on whether driving for cheaper gas is worth it.
           </p>
@@ -32,7 +32,7 @@ export default function About() {
           {/* ✏️ Replace href with your YouTube channel URL */}
           <a
             className={styles.linkCard}
-            href="https://youtube.com/@yourchannel"
+            href="https://www.youtube.com/@thekentwood"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -64,9 +64,12 @@ export default function About() {
         </div>
 
         <div className={styles.formula}>
-          <div className={styles.formulaLabel}>THE MATH</div>
-          <div className={styles.formulaLine}>P₁ = (Tₕ − T꜀ − R·D₁/MPG) × G₁</div>
-          <div className={styles.formulaLine}>P₂ = (Tₕ − T꜀ − R·D₂/MPG) × G₂</div>
+          <div className={styles.formulaLine}>One Way:</div>
+          <div className={styles.formulaLine}>P₁ = (Tₕ − T꜀ − D₁/MPG) × G₁</div>
+          <div className={styles.formulaLine}>P₂ = (Tₕ − T꜀ − D₂/MPG) × G₂</div>
+          <div className={styles.formulaLine}>Dedicated Trip:</div>
+          <div className={styles.formulaLine}>P₁ = (Tₕ − T꜀ − D₁/MPG) × G₁ + (D₁/MPG) × G₁</div>
+          <div className={styles.formulaLine}>P₂ = (Tₕ − T꜀ − D₂/MPG) × G₂ + (D₂/MPG) × G₂</div>
           <div className={styles.formulaLine}>Savings = P₁ − P₂</div>
         </div>
 
