@@ -9,8 +9,8 @@ const defaultState = {
   D2: '',
   MPG: '',
   R: '1',
-  filltype: 'dollars',
-  fillamount: '',
+  fillType: 'dollars',
+  fillAmount: '',
 }
 
 export default function Calculator() {
@@ -32,8 +32,8 @@ export default function Calculator() {
   }
 
   const calculate = () => {
-    const { G1, G2, D1, D2, MPG, R, filltype, fillamount } = values
-    const nums = { G1, G2, D1, D2, MPG, fillamount }
+    const { G1, G2, D1, D2, MPG, R, fillType, fillAmount } = values
+    const nums = { G1, G2, D1, D2, MPG, fillAmount }
 
     for (const [key, val] of Object.entries(nums)) {
       if (val === '' || isNaN(Number(val)) || Number(val) < 0) {
@@ -46,30 +46,16 @@ export default function Calculator() {
     const g2 = Number(G2)
     const d1 = Number(D1)
     const d2 = Number(D2)
-    const th = Number(Th)
-    const tc = Number(Tc)
     const mpg = Number(MPG)
     const r = Number(R)
+    const fill = Number(fillAmount)
 
     if (mpg === 0) { setError('MPG cannot be zero.'); return }
-    if (tc >= th) { setError('Current fuel must be less than tank capacity.'); return }
+    if (fill === 0) { setError('Fill amount cannot be zero.'); return }
     if (d2 <= d1) { setError('Further station must be farther than the closer one.'); return }
 
-    const fill = Number(fillAmount)
     const gallonsAtCloser = fillType === 'dollars' ? fill / g1 : fill
     const gallonsAtFurther = fillType === 'dollars' ? fill / g2 : fill
-
-    let P1, P2
-
-    if (r === 1) {
-     // One way
-     P1 = (gallonsAtCloser - (d1 / mpg)) * g1
-     P2 = (gallonsAtFurther - (d2 / mpg)) * g2
-}   else {
-      // Dedicated round trip
-     P1 = (gallonsAtCloser - (d1 / mpg)) * g1 + (d1 / mpg) * g1
-     P2 = (gallonsAtFurther - (d2 / mpg)) * g2 + (d2 / mpg) * g2
-}
 
     if (gallonsAtCloser - (d1 / mpg) <= 0) {
       setError("You'd burn more fuel getting to the closer station than you'd buy. Check your inputs.")
@@ -81,17 +67,36 @@ export default function Calculator() {
       return
     }
 
-    const savings = P1 - P2 // positive = further is cheaper
-    const gallonsHomeCloser = r === 1 ? gallonsAtCloser - (d1 / mpg) : gallonsAtCloser - (d2 / mpg)
-    const gallonsHomeFurther = r === 1 ? gallonsAtFurther - (d2 / mpg) : gallonsAtFurther - (d2 / mpg)
+    let P1, P2
 
-    setResult({ 
-      P1: P1.toFixed(2), 
-     P2: P2.toFixed(2), 
-     savings: savings.toFixed(2),
-     gallonsHomeCloser: gallonsHomeCloser.toFixed(2),
-     gallonsHomeFurther: gallonsHomeFurther.toFixed(2),
-}) 
+    if (r === 1) {
+      // One way
+      P1 = (gallonsAtCloser - (d1 / mpg)) * g1
+      P2 = (gallonsAtFurther - (d2 / mpg)) * g2
+    } else {
+      // Dedicated round trip
+      P1 = (gallonsAtCloser - (d1 / mpg)) * g1 + (d1 / mpg) * g1
+      P2 = (gallonsAtFurther - (d2 / mpg)) * g2 + (d2 / mpg) * g2
+    }
+
+    const savings = P1 - P2
+
+    const gallonsHomeCloser = r === 1
+      ? gallonsAtCloser - (d1 / mpg)
+      : gallonsAtCloser - (d1 / mpg) - (d1 / mpg)
+
+    const gallonsHomeFurther = r === 1
+      ? gallonsAtFurther - (d2 / mpg)
+      : gallonsAtFurther - (d2 / mpg) - (d2 / mpg)
+
+    setResult({
+      P1: P1.toFixed(2),
+      P2: P2.toFixed(2),
+      savings: savings.toFixed(2),
+      gallonsHomeCloser: gallonsHomeCloser.toFixed(2),
+      gallonsHomeFurther: gallonsHomeFurther.toFixed(2),
+    })
+    setError('')
   }
 
   const reset = () => {
@@ -104,7 +109,6 @@ export default function Calculator() {
 
   return (
     <div className={styles.page}>
-      {/* Noise texture overlay */}
       <div className={styles.noise} />
 
       <div className={styles.container}>
@@ -169,29 +173,29 @@ export default function Calculator() {
             <div className={styles.sectionLabel}>FILL AMOUNT</div>
             <div className={styles.toggle}>
               <button
-             className={`${styles.toggleBtn} ${values.fillType === 'dollars' ? styles.toggleActive : ''}`}
-            onClick={() => setValues(prev => ({ ...prev, fillType: 'dollars', fillAmount: '' }))}
-    >
-               Dollar Amount
+                className={`${styles.toggleBtn} ${values.fillType === 'dollars' ? styles.toggleActive : ''}`}
+                onClick={() => setValues(prev => ({ ...prev, fillType: 'dollars', fillAmount: '' }))}
+              >
+                Dollar Amount
               </button>
               <button
-               className={`${styles.toggleBtn} ${values.fillType === 'gallons' ? styles.toggleActive : ''}`}
-               onClick={() => setValues(prev => ({ ...prev, fillType: 'gallons', fillAmount: '' }))}
-    >
-               Gallon Amount
+                className={`${styles.toggleBtn} ${values.fillType === 'gallons' ? styles.toggleActive : ''}`}
+                onClick={() => setValues(prev => ({ ...prev, fillType: 'gallons', fillAmount: '' }))}
+              >
+                Gallon Amount
               </button>
-  </div>
-  <InputField
-    label={values.fillType === 'dollars' ? 'How much are you spending?' : 'How many gallons?'}
-    name="fillAmount"
-    value={values.fillAmount}
-    onChange={handleChange}
-    prefix={values.fillType === 'dollars' ? '$' : undefined}
-    suffix={values.fillType === 'gallons' ? 'gal' : undefined}
-    placeholder={values.fillType === 'dollars' ? '20.00' : '10'}
-    wide
-  />
-</div>
+            </div>
+            <InputField
+              label={values.fillType === 'dollars' ? 'How much are you spending?' : 'How many gallons?'}
+              name="fillAmount"
+              value={values.fillAmount}
+              onChange={handleChange}
+              prefix={values.fillType === 'dollars' ? '$' : undefined}
+              suffix={values.fillType === 'gallons' ? 'gal' : undefined}
+              placeholder={values.fillType === 'dollars' ? '20.00' : '10'}
+              wide
+            />
+          </div>
 
           {/* MPG */}
           <div className={styles.section}>
@@ -227,7 +231,7 @@ export default function Calculator() {
             <p className={styles.toggleHint}>
               {values.R === '1'
                 ? 'Station is on your route — one-way distance used.'
-                : 'Making a special trip — distance is doubled.'}
+                : 'Making a special trip — drive home cost included.'}
             </p>
           </div>
 
@@ -251,24 +255,29 @@ export default function Calculator() {
             <div className={styles.resultVerdict}>
               {hasSavings ? '✓ WORTH THE DRIVE' : '✗ STAY CLOSER'}
             </div>
-           <div className={styles.resultBreakdown}>
-             <div className={styles.breakdownItem}>
-              <span>Closer station total</span>
-              <span>${result.P1}</span>
-           </div>
-           <div className={styles.breakdownItem}>
-             <span>Closer station gallons home</span>
-             <span>{result.gallonsHomeCloser} gal</span>
-           </div>
-           <div className={styles.breakdownItem}>
-             <span>Further station total</span>
-             <span>${result.P2}</span>
-  </div>
-  <div className={styles.breakdownItem}>
-    <span>Further station gallons home</span>
-    <span>{result.gallonsHomeFurther} gal</span>
-  </div>
-</div>
+            <div className={styles.resultSavings}>
+              {hasSavings
+                ? `You save $${result.savings}`
+                : `You lose $${Math.abs(Number(result.savings)).toFixed(2)}`}
+            </div>
+            <div className={styles.resultBreakdown}>
+              <div className={styles.breakdownItem}>
+                <span>Closer station total</span>
+                <span>${result.P1}</span>
+              </div>
+              <div className={styles.breakdownItem}>
+                <span>Closer station gallons home</span>
+                <span>{result.gallonsHomeCloser} gal</span>
+              </div>
+              <div className={styles.breakdownItem}>
+                <span>Further station total</span>
+                <span>${result.P2}</span>
+              </div>
+              <div className={styles.breakdownItem}>
+                <span>Further station gallons home</span>
+                <span>{result.gallonsHomeFurther} gal</span>
+              </div>
+            </div>
             <p className={styles.resultNote}>
               Totals include fuel burned driving to each station.
             </p>
