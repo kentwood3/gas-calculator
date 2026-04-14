@@ -367,3 +367,63 @@
   background: var(--border);
   margin: 8px 0;
 }
+
+.verdictGood { color: var(--green); }
+.verdictBad { color: var(--red); }
+.savingsGood { color: var(--green); }
+.savingsBad { color: var(--red); }
+
+.choiceLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.choiceRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.choiceBtn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.choiceBtn:hover {
+  border-color: var(--border-hover);
+}
+
+.choiceSelected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.choiceName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.choiceStats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.choiceConfirm {
+  font-size: 13px;
+  color: var(--accent);
+  margin-top: 12px;
+  text-align: center;
+}

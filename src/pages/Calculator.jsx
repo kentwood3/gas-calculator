@@ -17,6 +17,7 @@ export default function Calculator() {
   const [values, setValues] = useState(defaultState)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
+  const [choice, setChoice] = useState(null)
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -24,11 +25,13 @@ export default function Calculator() {
     setValues((prev) => ({ ...prev, [name]: value }))
     setResult(null)
     setError('')
+    setChoice(null)
   }
 
   const handleTrip = (val) => {
     setValues((prev) => ({ ...prev, R: val }))
     setResult(null)
+    setChoice(null)
   }
 
   const calculate = () => {
@@ -56,7 +59,7 @@ export default function Calculator() {
     const gallonsPumpedCloser = fillType === 'dollars' ? fill / g1 : fill
     const gallonsPumpedFurther = fillType === 'dollars' ? fill / g2 : fill
 
-    // Fuel burned driving to each station (one way)
+    // Fuel burned driving to each station
     const fuelToCloser = d1 / mpg
     const fuelToFurther = d2 / mpg
 
@@ -87,45 +90,52 @@ export default function Calculator() {
     }
 
     // Dollar cost at each station
-    // For gallon input: cost = gallons pumped x price
-    // For dollar input on one way: cost = (gallons pumped - fuel to get there) x price
-    // For dollar input on dedicated trip: always equals fill amount (math cancels) so compare gallons home instead
+    // Dollar input dedicated trip: always equals fill amount (math cancels out)
+    // Dollar input one way: effective cost = gallons pumped minus drive there, times price
+    // Gallon input: cost = gallons pumped x price
     let costCloser, costFurther
-    if (fillType === 'gallons') {
-      costCloser = gallonsPumpedCloser * g1
-      costFurther = gallonsPumpedFurther * g2
-    } else {
-      // one way: effective cost is what you spent minus what you burned getting there
+    const isDedicatedDollar = fillType === 'dollars' && r === 2
+
+    if (isDedicatedDollar) {
+      costCloser = fill
+      costFurther = fill
+    } else if (fillType === 'dollars') {
       costCloser = (gallonsPumpedCloser - fuelToCloser) * g1
       costFurther = (gallonsPumpedFurther - fuelToFurther) * g2
+    } else {
+      costCloser = gallonsPumpedCloser * g1
+      costFurther = gallonsPumpedFurther * g2
     }
 
-    const dollarSavings = costCloser - costFurther
-    const gallonDiff = gallonsHomeFurther - gallonsHomeCloser
+    const dollarSavings = costCloser - costFurther // positive = further wins
+    const gallonDiff = gallonsHomeFurther - gallonsHomeCloser // positive = further wins
 
-    // Determine primary comparison metric
-    // Dollar input + dedicated trip = gallons home is the meaningful metric
-    // Everything else = dollar comparison is meaningful
-    const useDedicatedDollar = fillType === 'dollars' && r === 2
+    // Winner determination
+    // Dedicated dollar trip: compare gallons home
+    // Everything else: compare dollar cost
+    const furtherWins = isDedicatedDollar
+      ? gallonsHomeFurther > gallonsHomeCloser
+      : Number(dollarSavings) > 0
 
     setResult({
       costCloser: costCloser.toFixed(2),
       costFurther: costFurther.toFixed(2),
-      gallonsHomeCloser: gallonsHomeCloser.toFixed(2),
-      gallonsHomeFurther: gallonsHomeFurther.toFixed(2),
-      dollarSavings: dollarSavings.toFixed(2),
-      gallonDiff: gallonDiff.toFixed(3),
-      useDedicatedDollar,
-      fillType,
-      r,
+      gallonsHomeCloser: gallonsHomeCloser.toFixed(3),
+      gallonsHomeFurther: gallonsHomeFurther.toFixed(3),
+      dollarSavings: Math.abs(dollarSavings).toFixed(2),
+      gallonDiff: Math.abs(gallonDiff).toFixed(3),
+      furtherWins,
+      isDedicatedDollar,
     })
     setError('')
+    setChoice(null)
   }
 
   const reset = () => {
     setValues(defaultState)
     setResult(null)
     setError('')
+    setChoice(null)
   }
 
   return (
@@ -271,7 +281,84 @@ export default function Calculator() {
         </div>
 
         {/* Result */}
-        {result && <ResultCard result={result} />}
+        {result && (
+          <div className={styles.result}>
+
+            {/* Verdict */}
+            <div className={`${styles.resultVerdict} ${result.furtherWins ? styles.verdictGood : styles.verdictBad}`}>
+              {result.furtherWins ? '✓ FURTHER STATION WINS' : '✓ CLOSER STATION WINS'}
+            </div>
+
+            {/* Primary metric */}
+            <div className={`${styles.resultSavings} ${result.furtherWins ? styles.savingsGood : styles.savingsBad}`}>
+              {result.isDedicatedDollar
+                ? `${result.furtherWins ? '+' : '-'}${result.gallonDiff} gal more at home`
+                : `${result.furtherWins ? 'You save' : 'You lose'} $${result.dollarSavings}`}
+            </div>
+
+            {/* Breakdown */}
+            <div className={styles.resultBreakdown}>
+              <div className={styles.breakdownHeader}>CLOSER STATION</div>
+              <div className={styles.breakdownItem}>
+                <span>Total cost</span>
+                <span>${result.costCloser}</span>
+              </div>
+              <div className={styles.breakdownItem}>
+                <span>Gallons when home</span>
+                <span>{result.gallonsHomeCloser} gal</span>
+              </div>
+
+              <div className={styles.breakdownDivider} />
+
+              <div className={styles.breakdownHeader}>FURTHER STATION</div>
+              <div className={styles.breakdownItem}>
+                <span>Total cost</span>
+                <span>${result.costFurther}</span>
+              </div>
+              <div className={styles.breakdownItem}>
+                <span>Gallons when home</span>
+                <span>{result.gallonsHomeFurther} gal</span>
+              </div>
+            </div>
+
+            <p className={styles.resultNote}>
+              {result.isDedicatedDollar
+                ? 'Dollar cost is the same either way on a dedicated trip — gallons home is what matters.'
+                : 'Totals include fuel burned driving to each station.'}
+            </p>
+
+            {/* Choice buttons */}
+            <div className={styles.choiceLabel}>WHERE ARE YOU GOING?</div>
+            <div className={styles.choiceRow}>
+              <button
+                className={`${styles.choiceBtn} ${choice === 'closer' ? styles.choiceSelected : ''}`}
+                onClick={() => setChoice('closer')}
+              >
+                <div className={styles.choiceName}>Closer Station</div>
+                <div className={styles.choiceStats}>
+                  <span>${result.costCloser}</span>
+                  <span>{result.gallonsHomeCloser} gal home</span>
+                </div>
+              </button>
+              <button
+                className={`${styles.choiceBtn} ${choice === 'further' ? styles.choiceSelected : ''}`}
+                onClick={() => setChoice('further')}
+              >
+                <div className={styles.choiceName}>Further Station</div>
+                <div className={styles.choiceStats}>
+                  <span>${result.costFurther}</span>
+                  <span>{result.gallonsHomeFurther} gal home</span>
+                </div>
+              </button>
+            </div>
+            {choice && (
+              <p className={styles.choiceConfirm}>
+                {choice === 'closer' ? '← Closer station it is.' : 'Further station it is. →'}
+              </p>
+            )}
+
+          </div>
+        )}
 
         {/* Footer */}
         <footer className={styles.footer}>
@@ -280,78 +367,6 @@ export default function Calculator() {
           </button>
         </footer>
       </div>
-    </div>
-  )
-}
-
-function ResultCard({ result }) {
-  const {
-    costCloser, costFurther,
-    gallonsHomeCloser, gallonsHomeFurther,
-    dollarSavings, gallonDiff,
-    useDedicatedDollar,
-  } = result
-
-  const furtherWinsDollars = Number(dollarSavings) > 0
-  const furtherWinsGallons = Number(gallonDiff) > 0
-
-  // For dedicated dollar trips, winner is determined by gallons home
-  const furtherWins = useDedicatedDollar ? furtherWinsGallons : furtherWinsDollars
-
-  return (
-    <div className={`${styles.result} ${furtherWins ? styles.resultGood : styles.resultBad}`}>
-
-      <div className={styles.resultVerdict}>
-        {furtherWins ? '✓ FURTHER STATION WINS' : '✗ CLOSER STATION WINS'}
-      </div>
-
-      {/* Primary metric */}
-      {useDedicatedDollar ? (
-        <div className={styles.resultSavings}>
-          {furtherWins
-            ? `+${gallonDiff} gal more at home`
-            : `${Math.abs(Number(gallonDiff)).toFixed(3)} gal less at home`}
-        </div>
-      ) : (
-        <div className={styles.resultSavings}>
-          {furtherWins
-            ? `You save $${dollarSavings}`
-            : `You lose $${Math.abs(Number(dollarSavings)).toFixed(2)}`}
-        </div>
-      )}
-
-      {/* Breakdown */}
-      <div className={styles.resultBreakdown}>
-
-        <div className={styles.breakdownHeader}>CLOSER STATION</div>
-        <div className={styles.breakdownItem}>
-          <span>Total cost</span>
-          <span>${costCloser}</span>
-        </div>
-        <div className={styles.breakdownItem}>
-          <span>Gallons when home</span>
-          <span>{gallonsHomeCloser} gal</span>
-        </div>
-
-        <div className={styles.breakdownDivider} />
-
-        <div className={styles.breakdownHeader}>FURTHER STATION</div>
-        <div className={styles.breakdownItem}>
-          <span>Total cost</span>
-          <span>${costFurther}</span>
-        </div>
-        <div className={styles.breakdownItem}>
-          <span>Gallons when home</span>
-          <span>{gallonsHomeFurther} gal</span>
-        </div>
-
-      </div>
-
-      <p className={styles.resultNote}>
-        {useDedicatedDollar
-          ? 'Dollar cost is the same either way on a dedicated trip — gallons home is what matters.'
-          : 'Totals include fuel burned driving to each station.'}
-      </p>
     </div>
   )
 }
