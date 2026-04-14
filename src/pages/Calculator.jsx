@@ -76,7 +76,7 @@ export default function Calculator() {
       return
     }
 
-    // Gallons actually in tank when you get home
+    // Gallons in tank when home
     const gallonsHomeCloser = gallonsPumpedCloser - fuelToCloser - fuelHomeCloser
     const gallonsHomeFurther = gallonsPumpedFurther - fuelToFurther - fuelHomeFurther
 
@@ -89,13 +89,10 @@ export default function Calculator() {
       return
     }
 
-    // Dollar cost at each station
-    // Dollar input dedicated trip: always equals fill amount (math cancels out)
-    // Dollar input one way: effective cost = gallons pumped minus drive there, times price
-    // Gallon input: cost = gallons pumped x price
-    let costCloser, costFurther
     const isDedicatedDollar = fillType === 'dollars' && r === 2
 
+    // Dollar cost at each station
+    let costCloser, costFurther
     if (isDedicatedDollar) {
       costCloser = fill
       costFurther = fill
@@ -110,12 +107,14 @@ export default function Calculator() {
     const dollarSavings = costCloser - costFurther // positive = further wins
     const gallonDiff = gallonsHomeFurther - gallonsHomeCloser // positive = further wins
 
-    // Winner determination
-    // Dedicated dollar trip: compare gallons home
-    // Everything else: compare dollar cost
+    // Winner
     const furtherWins = isDedicatedDollar
       ? gallonsHomeFurther > gallonsHomeCloser
-      : Number(dollarSavings) > 0
+      : dollarSavings > 0
+
+    // Quantify the gallon difference in dollars using winner's price
+    const winnerPrice = furtherWins ? g2 : g1
+    const gallonDiffDollars = Math.abs(gallonDiff) * winnerPrice
 
     setResult({
       costCloser: costCloser.toFixed(2),
@@ -124,6 +123,7 @@ export default function Calculator() {
       gallonsHomeFurther: gallonsHomeFurther.toFixed(3),
       dollarSavings: Math.abs(dollarSavings).toFixed(2),
       gallonDiff: Math.abs(gallonDiff).toFixed(3),
+      gallonDiffDollars: gallonDiffDollars.toFixed(2),
       furtherWins,
       isDedicatedDollar,
     })
@@ -141,65 +141,32 @@ export default function Calculator() {
   return (
     <div className={styles.page}>
       <div className={styles.noise} />
-
       <div className={styles.container}>
-        {/* Header */}
+
         <header className={styles.header}>
           <div className={styles.tag}>FUEL OPTIMIZER</div>
           <h1 className={styles.title}>GAS<br />CALC</h1>
           <p className={styles.subtitle}>Is the drive worth it?</p>
         </header>
 
-        {/* Form */}
         <div className={styles.form}>
 
-          {/* Gas Prices */}
           <div className={styles.section}>
             <div className={styles.sectionLabel}>GAS PRICES <span>/ per gallon</span></div>
             <div className={styles.row}>
-              <InputField
-                label="Closer Station"
-                name="G1"
-                value={values.G1}
-                onChange={handleChange}
-                prefix="$"
-                placeholder="3.49"
-              />
-              <InputField
-                label="Further Station"
-                name="G2"
-                value={values.G2}
-                onChange={handleChange}
-                prefix="$"
-                placeholder="3.29"
-              />
+              <InputField label="Closer Station" name="G1" value={values.G1} onChange={handleChange} prefix="$" placeholder="3.49" />
+              <InputField label="Further Station" name="G2" value={values.G2} onChange={handleChange} prefix="$" placeholder="3.29" />
             </div>
           </div>
 
-          {/* Distances */}
           <div className={styles.section}>
             <div className={styles.sectionLabel}>DISTANCE <span>/ miles</span></div>
             <div className={styles.row}>
-              <InputField
-                label="To Closer Station"
-                name="D1"
-                value={values.D1}
-                onChange={handleChange}
-                suffix="mi"
-                placeholder="1.2"
-              />
-              <InputField
-                label="To Further Station"
-                name="D2"
-                value={values.D2}
-                onChange={handleChange}
-                suffix="mi"
-                placeholder="4.5"
-              />
+              <InputField label="To Closer Station" name="D1" value={values.D1} onChange={handleChange} suffix="mi" placeholder="1.2" />
+              <InputField label="To Further Station" name="D2" value={values.D2} onChange={handleChange} suffix="mi" placeholder="4.5" />
             </div>
           </div>
 
-          {/* Fill Amount */}
           <div className={styles.section}>
             <div className={styles.sectionLabel}>FILL AMOUNT</div>
             <div className={styles.toggle}>
@@ -228,55 +195,31 @@ export default function Calculator() {
             />
           </div>
 
-          {/* MPG */}
           <div className={styles.section}>
             <div className={styles.sectionLabel}>YOUR CAR</div>
-            <InputField
-              label="Miles Per Gallon"
-              name="MPG"
-              value={values.MPG}
-              onChange={handleChange}
-              suffix="mpg"
-              placeholder="28"
-              wide
-            />
+            <InputField label="Miles Per Gallon" name="MPG" value={values.MPG} onChange={handleChange} suffix="mpg" placeholder="28" wide />
           </div>
 
-          {/* Trip Type */}
           <div className={styles.section}>
             <div className={styles.sectionLabel}>TRIP TYPE</div>
             <div className={styles.toggle}>
-              <button
-                className={`${styles.toggleBtn} ${values.R === '1' ? styles.toggleActive : ''}`}
-                onClick={() => handleTrip('1')}
-              >
+              <button className={`${styles.toggleBtn} ${values.R === '1' ? styles.toggleActive : ''}`} onClick={() => handleTrip('1')}>
                 On My Way
               </button>
-              <button
-                className={`${styles.toggleBtn} ${values.R === '2' ? styles.toggleActive : ''}`}
-                onClick={() => handleTrip('2')}
-              >
+              <button className={`${styles.toggleBtn} ${values.R === '2' ? styles.toggleActive : ''}`} onClick={() => handleTrip('2')}>
                 Dedicated Trip
               </button>
             </div>
             <p className={styles.toggleHint}>
-              {values.R === '1'
-                ? 'Station is on your route — one-way distance used.'
-                : 'Making a special trip — drive home cost included.'}
+              {values.R === '1' ? 'Station is on your route — one-way distance used.' : 'Making a special trip — drive home cost included.'}
             </p>
           </div>
 
-          {/* Error */}
           {error && <div className={styles.error}>{error}</div>}
 
-          {/* Actions */}
           <div className={styles.actions}>
-            <button className={styles.calcBtn} onClick={calculate}>
-              Calculate
-            </button>
-            <button className={styles.resetBtn} onClick={reset}>
-              Reset
-            </button>
+            <button className={styles.calcBtn} onClick={calculate}>Calculate</button>
+            <button className={styles.resetBtn} onClick={reset}>Reset</button>
           </div>
         </div>
 
@@ -284,87 +227,81 @@ export default function Calculator() {
         {result && (
           <div className={styles.result}>
 
-            {/* Verdict */}
-            <div className={`${styles.resultVerdict} ${result.furtherWins ? styles.verdictGood : styles.verdictBad}`}>
-              {result.furtherWins ? '✓ FURTHER STATION WINS' : '✓ CLOSER STATION WINS'}
-            </div>
-
-            {/* Primary metric */}
-            <div className={`${styles.resultSavings} ${result.furtherWins ? styles.savingsGood : styles.savingsBad}`}>
-              {result.isDedicatedDollar
-                ? `${result.furtherWins ? '+' : '-'}${result.gallonDiff} gal more at home`
-                : `${result.furtherWins ? 'You save' : 'You lose'} $${result.dollarSavings}`}
-            </div>
-
-            {/* Breakdown */}
-            <div className={styles.resultBreakdown}>
-              <div className={styles.breakdownHeader}>CLOSER STATION</div>
-              <div className={styles.breakdownItem}>
-                <span>Total cost</span>
-                <span>${result.costCloser}</span>
-              </div>
-              <div className={styles.breakdownItem}>
-                <span>Gallons when home</span>
-                <span>{result.gallonsHomeCloser} gal</span>
-              </div>
-
-              <div className={styles.breakdownDivider} />
-
-              <div className={styles.breakdownHeader}>FURTHER STATION</div>
-              <div className={styles.breakdownItem}>
-                <span>Total cost</span>
-                <span>${result.costFurther}</span>
-              </div>
-              <div className={styles.breakdownItem}>
-                <span>Gallons when home</span>
-                <span>{result.gallonsHomeFurther} gal</span>
-              </div>
-            </div>
-
-            <p className={styles.resultNote}>
-              {result.isDedicatedDollar
-                ? 'Dollar cost is the same either way on a dedicated trip — gallons home is what matters.'
-                : 'Totals include fuel burned driving to each station.'}
-            </p>
-
-            {/* Choice buttons */}
             <div className={styles.choiceLabel}>WHERE ARE YOU GOING?</div>
+
             <div className={styles.choiceRow}>
+              {/* Closer Station Card */}
               <button
                 className={`${styles.choiceBtn} ${choice === 'closer' ? styles.choiceSelected : ''}`}
                 onClick={() => setChoice('closer')}
               >
-                <div className={styles.choiceName}>Closer Station</div>
+                <div className={`${styles.choiceName} ${result.furtherWins ? styles.loser : styles.winner}`}>
+                  Closer Station
+                </div>
                 <div className={styles.choiceStats}>
-                  <span>${result.costCloser}</span>
-                  <span>{result.gallonsHomeCloser} gal home</span>
+                  <div className={styles.choiceStat}>
+                    <span className={styles.choiceStatLabel}>Cost</span>
+                    <span className={styles.choiceStatValue}>${result.costCloser}</span>
+                  </div>
+                  <div className={styles.choiceStat}>
+                    <span className={styles.choiceStatLabel}>Gal home</span>
+                    <span className={styles.choiceStatValue}>{result.gallonsHomeCloser}</span>
+                  </div>
+                  {!result.furtherWins && (
+                    <div className={styles.choiceDiff}>
+                      {result.isDedicatedDollar
+                        ? `+${result.gallonDiff} gal / +$${result.gallonDiffDollars} more`
+                        : `$${result.dollarSavings} cheaper`}
+                    </div>
+                  )}
                 </div>
               </button>
+
+              {/* Further Station Card */}
               <button
                 className={`${styles.choiceBtn} ${choice === 'further' ? styles.choiceSelected : ''}`}
                 onClick={() => setChoice('further')}
               >
-                <div className={styles.choiceName}>Further Station</div>
+                <div className={`${styles.choiceName} ${result.furtherWins ? styles.winner : styles.loser}`}>
+                  Further Station
+                </div>
                 <div className={styles.choiceStats}>
-                  <span>${result.costFurther}</span>
-                  <span>{result.gallonsHomeFurther} gal home</span>
+                  <div className={styles.choiceStat}>
+                    <span className={styles.choiceStatLabel}>Cost</span>
+                    <span className={styles.choiceStatValue}>${result.costFurther}</span>
+                  </div>
+                  <div className={styles.choiceStat}>
+                    <span className={styles.choiceStatLabel}>Gal home</span>
+                    <span className={styles.choiceStatValue}>{result.gallonsHomeFurther}</span>
+                  </div>
+                  {result.furtherWins && (
+                    <div className={styles.choiceDiff}>
+                      {result.isDedicatedDollar
+                        ? `+${result.gallonDiff} gal / +$${result.gallonDiffDollars} more`
+                        : `$${result.dollarSavings} cheaper`}
+                    </div>
+                  )}
                 </div>
               </button>
             </div>
+
             {choice && (
               <p className={styles.choiceConfirm}>
                 {choice === 'closer' ? '← Closer station it is.' : 'Further station it is. →'}
               </p>
             )}
 
+            {result.isDedicatedDollar && (
+              <p className={styles.resultNote}>
+                Both options cost ${result.costCloser} — gallons home is what differs.
+              </p>
+            )}
+
           </div>
         )}
 
-        {/* Footer */}
         <footer className={styles.footer}>
-          <button className={styles.aboutBtn} onClick={() => navigate('/about')}>
-            About
-          </button>
+          <button className={styles.aboutBtn} onClick={() => navigate('/about')}>About</button>
         </footer>
       </div>
     </div>
