@@ -126,6 +126,7 @@ export default function Calculator() {
       gallonDiffDollars: gallonDiffDollars.toFixed(2),
       furtherWins,
       isDedicatedDollar,
+      isOneWay: r === 1,
     })
     setError('')
     setChoice(null)
@@ -243,10 +244,12 @@ export default function Calculator() {
                     <span className={styles.choiceStatLabel}>Cost</span>
                     <span className={styles.choiceStatValue}>${result.costCloser}</span>
                   </div>
-                  <div className={styles.choiceStat}>
-                    <span className={styles.choiceStatLabel}>Gal home</span>
-                    <span className={styles.choiceStatValue}>{result.gallonsHomeCloser}</span>
-                  </div>
+                  {!result.isOneWay && (
+                    <div className={styles.choiceStat}>
+                      <span className={styles.choiceStatLabel}>Gal home</span>
+                      <span className={styles.choiceStatValue}>{result.gallonsHomeCloser}</span>
+                    </div>
+                  )}
                   {!result.furtherWins && (
                     <div className={styles.choiceDiff}>
                       {result.isDedicatedDollar
@@ -270,10 +273,12 @@ export default function Calculator() {
                     <span className={styles.choiceStatLabel}>Cost</span>
                     <span className={styles.choiceStatValue}>${result.costFurther}</span>
                   </div>
-                  <div className={styles.choiceStat}>
-                    <span className={styles.choiceStatLabel}>Gal home</span>
-                    <span className={styles.choiceStatValue}>{result.gallonsHomeFurther}</span>
-                  </div>
+                  {!result.isOneWay && (
+                    <div className={styles.choiceStat}>
+                      <span className={styles.choiceStatLabel}>Gal home</span>
+                      <span className={styles.choiceStatValue}>{result.gallonsHomeFurther}</span>
+                    </div>
+                  )}
                   {result.furtherWins && (
                     <div className={styles.choiceDiff}>
                       {result.isDedicatedDollar
