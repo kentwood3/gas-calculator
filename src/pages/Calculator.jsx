@@ -334,3 +334,6 @@ function InputField({ label, name, value, onChange, prefix, suffix, placeholder,
     </div>
   )
 }
+<button className={styles.aboutBtn} onClick={() => navigate('/transit')}>
+  Drive vs Transit
+</button>

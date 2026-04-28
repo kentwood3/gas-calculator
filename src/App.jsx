@@ -10,3 +10,7 @@ export default function App() {
     </Routes>
   )
 }
+import TransitCalc from './pages/TransitCalc.jsx'
+
+// Add this inside <Routes>:
+<Route path="/transit" element={<TransitCalc />} />
